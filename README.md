@@ -251,16 +251,43 @@ volunteer administrator cannot write a rule that breaks checkout.
 
 ## Testing
 
+The Equipment Hire platform includes automated unit and integration tests for both backend and frontend applications.
+
+Testing is performed using **Vitest**, with React Testing Library and jsdom used for frontend integration testing.
+
+### Test Summary
+
+| Application | Test Type | Test Files | Tests | Result |
+|---|---|---:|---:|---|
+| Backend API | Unit | 6 | 86 | Passed |
+| Backend API | Integration | 3 | 37 | Passed |
+| Customer Web | Unit | 4 | 23 | Passed |
+| Admin Dashboard | Unit | 4 | 20 | Passed |
+| Customer Web | Integration | 2 | 4 | Passed |
+| Admin Dashboard | Integration | 2 | 5 | Passed |
+| **Total** | | **21** | **175** | **All passed** |
+
+These results were verified on 21 October 2026. Code coverage percentages have not been measured.
+
+### Backend Testing
+
+The backend contains **123 automated tests**, covering business logic, authentication, API endpoints and database interactions.
+
+Run the complete backend test suite from the repository root:
+
 ```bash
-pnpm test        # 123 tests
-pnpm test:unit   # pure logic, no database
+pnpm --filter @equipment-hire/api test
 ```
 
-Integration tests use a separate `eqhire_test` database and `TRUNCATE` between
-tests; `test/global-setup.js` refuses to run unless the database name contains
-`test`.
+Run backend unit tests only:
 
-The tests worth reading first:
+```bash
+pnpm --filter @equipment-hire/api test:unit
+```
+
+Backend integration tests use a separate `eqhire_test` database and `TRUNCATE` between tests. The `test/global-setup.js` guard refuses to run unless the database name contains `test`.
+
+The backend tests worth reading first:
 
 | File | What it proves |
 |---|---|
@@ -272,7 +299,128 @@ The tests worth reading first:
 | `unit/cancellation.test.js` | Refund schedule; the bond always returns in full |
 | `integration/admin.test.js` | Admin endpoints; no password hash ever leaves the server |
 
+### Frontend Unit Testing
+
+Frontend unit tests were added to verify individual React components and JavaScript functions without requiring a running backend or database.
+
+The tests follow the **Arrange–Act–Assert (AAA)** pattern and use mock data to verify expected behaviour.
+
+**Customer Web — 23 tests**
+
+Located in `apps/web/test/unit/`.
+
+| Test File | Functionality Tested |
+|---|---|
+| `slots.test.js` | Equipment pickup and return time windows |
+| `EquipmentVisual.test.js` | Equipment images and placeholders |
+| `EquipmentCard.test.js` | Equipment name, category, price and displayed information |
+| `BookingStatus.test.js` | Booking status labels and visual indicators |
+
+**Admin Dashboard — 20 tests**
+
+Located in `apps/admin/test/unit/`.
+
+| Test File | Functionality Tested |
+|---|---|
+| `PageHeader.test.js` | Page titles, subtitles and actions |
+| `MoneyInput.test.js` | Monetary values displayed in input fields |
+| `StatusBadge.test.js` | Booking status badges |
+| `moneyHelpers.test.js` | Dollar-to-cent conversion and currency formatting |
+
+These tests use Vitest and React's `renderToStaticMarkup()` to verify rendered HTML and JavaScript function outputs.
+
+Run Customer Web unit tests from the repository root:
+
+```bash
+apps/api/node_modules/.bin/vitest run --config apps/web/test/vitest.config.js
+```
+
+Run Admin Dashboard unit tests:
+
+```bash
+apps/api/node_modules/.bin/vitest run --config apps/admin/test/vitest.config.js
+```
+
+### Frontend Integration Testing
+
+Frontend integration tests verify how multiple React components, state management, routing and mocked API responses work together during user interactions.
+
+The tests use:
+
+- **Vitest** — test execution and assertions
+- **React Testing Library** — rendering and querying components
+- **jsdom** — simulated browser environment
+- **user-event** — simulated clicking, typing and other user actions
+- **Mock API responses** — predictable test data without real network requests
+
+**Customer Web — 4 tests**
+
+Located in `apps/web/test/integration/`.
+
+| Test Scenario | Expected Behaviour |
+|---|---|
+| Add equipment to basket | Selected quantity is added and a confirmation is displayed |
+| Navigate to basket | Basket page displays the selected equipment |
+| Update basket quantity | Quantity and stored basket data update correctly |
+| Remove equipment | Equipment is removed and the empty-basket message appears |
+
+**Admin Dashboard — 5 tests**
+
+Located in `apps/admin/test/integration/`.
+
+| Test Scenario | Expected Behaviour |
+|---|---|
+| Equipment status filtering | API query and displayed equipment match the selected status |
+| Equipment searching | Search query is sent and results update |
+| Approve booking | Correct discount is submitted and confirmation is shown |
+| Booking approval error | Error message is displayed and the dialog remains open |
+| Decline booking | A reason is required before submission |
+
+Run Customer Web integration tests:
+
+```bash
+pnpm --filter @equipment-hire/web exec vitest run --config test/vitest.integration.config.js
+```
+
+Run Admin Dashboard integration tests:
+
+```bash
+pnpm --filter @equipment-hire/admin exec vitest run --config test/vitest.integration.config.js
+```
+
+These frontend integration tests use mocked API responses and do not require Docker, PostgreSQL or a running backend server.
+
+### Test Directory Structure
+
+```text
+apps/
+├── api/
+│   └── test/
+│       ├── unit/
+│       └── integration/
+├── web/
+│   └── test/
+│       ├── unit/
+│       └── integration/
+└── admin/
+    └── test/
+        ├── unit/
+        └── integration/
+```
+
+### Testing Limitations
+
+The frontend unit tests focus on individual component rendering and JavaScript logic.
+
+The frontend integration tests simulate user interactions and mocked API responses. They do not verify actual HTTP communication with the backend or database.
+
+Full end-to-end browser testing, complete payment flows, cross-browser compatibility and code coverage measurement are outside the scope of the current automated frontend tests.
+
+The frontend test suites are not currently included in the root `pnpm test` command or GitHub CI workflow and must be run using the separate commands above.
+
+
 ---
+
 
 ## Frontends
 
