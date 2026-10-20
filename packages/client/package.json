@@ -1,0 +1,19 @@
+{
+  "name": "@equipment-hire/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "API client, formatting and status helpers shared by the customer site and admin panel",
+  "exports": {
+    ".": "./src/index.js",
+    "./ui": "./src/ui.jsx",
+    "./base.css": "./src/base.css"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "marked": "^16.1.2"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

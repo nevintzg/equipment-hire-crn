@@ -1,0 +1,29 @@
+# Replaces a long-running worker process.
+#
+# The API has no background queue: a Redis/BullMQ worker polling every few
+# seconds would keep the Neon database awake and exhaust the free compute
+# budget. Instead this workflow pokes one signed endpoint every hour, which
+# flushes the email outbox, expires unpaid approvals, flags overdue returns
+# and processes pending refunds. Every one of those operations is idempotent,
+# so a missed or duplicated tick is harmless.
+name: Hourly tick
+
+on:
+  schedule:
+    - cron: '7 * * * *' # hourly at :07 — off the hour, when GitHub is least busy
+  workflow_dispatch: # lets anyone on the team run it manually
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the cron endpoint
+        run: |
+          code=$(curl --silent --show-error --fail-with-body \
+            --max-time 120 --retry 3 --retry-all-errors \
+            --output /tmp/tick.json --write-out '%{http_code}' \
+            -X POST "${{ secrets.API_BASE_URL }}/api/v1/internal/cron/tick" \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            -H 'Content-Type: application/json')
+          echo "HTTP $code"
+          cat /tmp/tick.json

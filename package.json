@@ -1,0 +1,32 @@
+{
+  "name": "equipment-hire",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Configurable community equipment hire platform — API, customer site and admin panel",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev:api": "pnpm --filter @equipment-hire/api dev",
+    "dev:web": "pnpm --filter @equipment-hire/web dev",
+    "dev:admin": "pnpm --filter @equipment-hire/admin dev",
+    "dev": "pnpm --parallel --filter @equipment-hire/api --filter @equipment-hire/web --filter @equipment-hire/admin dev",
+    "build": "pnpm --filter @equipment-hire/web --filter @equipment-hire/admin build",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "db:migrate": "pnpm --filter @equipment-hire/api db:migrate",
+    "db:seed": "pnpm --filter @equipment-hire/api db:seed",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "test": "pnpm -r test"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "argon2",
+      "esbuild"
+    ]
+  }
+}
